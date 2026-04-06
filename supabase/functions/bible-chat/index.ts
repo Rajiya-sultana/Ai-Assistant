@@ -1,5 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -61,12 +60,40 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Call Gemini
-    const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY')!)
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    // Call Gemini via REST API directly (no SDK dependency issues)
+    const geminiKey = Deno.env.get('GEMINI_API_KEY')!
+    const geminiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: `${SYSTEM_PROMPT}\n\nUser: ${message.trim()}` }
+              ]
+            }
+          ],
+          generationConfig: {
+            maxOutputTokens: 1024,
+            temperature: 0.7,
+          }
+        }),
+      }
+    )
 
-    const result = await model.generateContent(`${SYSTEM_PROMPT}\n\nUser: ${message.trim()}`)
-    const response = result.response.text()
+    if (!geminiRes.ok) {
+      const geminiError = await geminiRes.text()
+      console.error('Gemini API error:', geminiError)
+      return new Response(
+        JSON.stringify({ error: 'AI service error' }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const geminiData = await geminiRes.json()
+    const response = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? 'Sorry, I could not generate a response.'
 
     // Save both messages to Supabase (service role bypasses RLS)
     await supabase.from('chat_messages').insert([
@@ -81,7 +108,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('bible-chat error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: error.message ?? 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
