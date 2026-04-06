@@ -60,41 +60,36 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Call Gemini via REST API directly (no SDK dependency issues)
-    const geminiKey = Deno.env.get('GEMINI_API_KEY')!
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: `${SYSTEM_PROMPT}\n\nUser: ${message.trim()}` }
-              ]
-            }
-          ],
-          generationConfig: {
-            maxOutputTokens: 1024,
-            temperature: 0.7,
-          }
-        }),
-      }
-    )
+    // Call Groq AI (OpenAI-compatible API)
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${Deno.env.get('GROQ_API_KEY')}`,
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: message.trim() },
+        ],
+        max_tokens: 1024,
+        temperature: 0.7,
+      }),
+    })
 
-    if (!geminiRes.ok) {
-      const geminiError = await geminiRes.json()
-      const message = geminiError?.error?.message ?? 'Unknown Gemini error'
-      console.error('Gemini API error:', message)
+    if (!groqRes.ok) {
+      const groqError = await groqRes.json()
+      const errMsg = groqError?.error?.message ?? 'Unknown Groq error'
+      console.error('Groq API error:', errMsg)
       return new Response(
-        JSON.stringify({ error: `Gemini error: ${message}` }),
+        JSON.stringify({ error: `AI error: ${errMsg}` }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const geminiData = await geminiRes.json()
-    const response = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? 'Sorry, I could not generate a response.'
+    const groqData = await groqRes.json()
+    const response = groqData.choices?.[0]?.message?.content ?? 'Sorry, I could not generate a response.'
 
     // Save both messages to Supabase (service role bypasses RLS)
     await supabase.from('chat_messages').insert([
