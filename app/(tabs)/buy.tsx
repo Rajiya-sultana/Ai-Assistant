@@ -1,11 +1,11 @@
 import { View, Text, StyleSheet } from 'react-native'
 
-export default function HomeScreen() {
+export default function BuyScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>✝</Text>
-      <Text style={styles.title}>Welcome to Bible Assistant</Text>
-      <Text style={styles.subtitle}>Your daily companion for Old & New Testament</Text>
+      <Text style={styles.icon}>🛒</Text>
+      <Text style={styles.title}>Shop</Text>
+      <Text style={styles.subtitle}>Coming soon</Text>
     </View>
   )
 }
