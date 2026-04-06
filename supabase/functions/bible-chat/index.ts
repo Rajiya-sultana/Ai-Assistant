@@ -84,10 +84,11 @@ Deno.serve(async (req) => {
     )
 
     if (!geminiRes.ok) {
-      const geminiError = await geminiRes.text()
-      console.error('Gemini API error:', geminiError)
+      const geminiError = await geminiRes.json()
+      const message = geminiError?.error?.message ?? 'Unknown Gemini error'
+      console.error('Gemini API error:', message)
       return new Response(
-        JSON.stringify({ error: 'AI service error' }),
+        JSON.stringify({ error: `Gemini error: ${message}` }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
