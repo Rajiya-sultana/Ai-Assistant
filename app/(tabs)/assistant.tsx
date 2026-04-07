@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity, FlatList,
-  StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator,
-  Alert,
+  StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
 } from 'react-native'
 import { supabase } from '@/lib/supabase'
 import { ChatMessage } from '@/lib/types'
@@ -29,9 +28,7 @@ export default function AssistantScreen() {
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const listRef = useRef<FlatList>(null)
 
-  useEffect(() => {
-    loadHistory()
-  }, [])
+  useEffect(() => { loadHistory() }, [])
 
   async function loadHistory() {
     const { data } = await supabase
@@ -39,9 +36,7 @@ export default function AssistantScreen() {
       .select('*')
       .order('created_at', { ascending: true })
       .limit(50)
-    if (data && data.length > 0) {
-      setMessages([WELCOME, ...data])
-    }
+    if (data && data.length > 0) setMessages([WELCOME, ...data])
     setHistoryLoaded(true)
   }
 
@@ -50,17 +45,9 @@ export default function AssistantScreen() {
     if (!trimmed || loading) return
     setInput('')
     setLoading(true)
-
     const tempId = `temp-${Date.now()}`
-    const userMsg: ChatMessage = {
-      id: tempId,
-      user_id: '',
-      role: 'user',
-      content: trimmed,
-      created_at: new Date().toISOString(),
-    }
+    const userMsg: ChatMessage = { id: tempId, user_id: '', role: 'user', content: trimmed, created_at: new Date().toISOString() }
     setMessages(prev => [...prev, userMsg])
-
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch(
@@ -75,20 +62,9 @@ export default function AssistantScreen() {
           body: JSON.stringify({ message: trimmed }),
         }
       )
-
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error ?? 'Server error')
-      }
-
+      if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? 'Server error') }
       const { response } = await res.json()
-      const assistantMsg: ChatMessage = {
-        id: `ai-${Date.now()}`,
-        user_id: '',
-        role: 'assistant',
-        content: response,
-        created_at: new Date().toISOString(),
-      }
+      const assistantMsg: ChatMessage = { id: `ai-${Date.now()}`, user_id: '', role: 'assistant', content: response, created_at: new Date().toISOString() }
       setMessages(prev => [...prev, assistantMsg])
     } catch (e: any) {
       setMessages(prev => prev.filter(m => m.id !== tempId))
@@ -102,21 +78,13 @@ export default function AssistantScreen() {
     const isUser = item.role === 'user'
     return (
       <View style={[styles.bubble, isUser ? styles.userBubble : styles.aiBubble]}>
-        <Text style={[styles.bubbleText, isUser ? styles.userText : styles.aiText]}>
-          {item.content}
-        </Text>
+        <Text style={[styles.bubbleText, isUser ? styles.userText : styles.aiText]}>{item.content}</Text>
       </View>
     )
   }
 
-  const showChips = historyLoaded && messages.length <= 1
-
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={90}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={90}>
       <FlatList
         ref={listRef}
         data={messages}
@@ -125,14 +93,10 @@ export default function AssistantScreen() {
         contentContainerStyle={styles.list}
         onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
         ListHeaderComponent={
-          showChips ? (
+          historyLoaded && messages.length <= 1 ? (
             <View style={styles.chipsRow}>
               {QUICK_CHIPS.map(chip => (
-                <TouchableOpacity
-                  key={chip.id}
-                  style={styles.chip}
-                  onPress={() => sendMessage(chip.label)}
-                >
+                <TouchableOpacity key={chip.id} style={styles.chip} onPress={() => sendMessage(chip.label)}>
                   <Text style={styles.chipText}>{chip.label}</Text>
                 </TouchableOpacity>
               ))}
@@ -140,19 +104,17 @@ export default function AssistantScreen() {
           ) : null
         }
       />
-
       {loading && (
         <View style={styles.typing}>
-          <ActivityIndicator size="small" color="#8b4513" />
+          <ActivityIndicator size="small" color="#967f42" />
           <Text style={styles.typingText}>Thinking...</Text>
         </View>
       )}
-
       <View style={styles.inputRow}>
         <TextInput
           style={styles.input}
           placeholder="Ask about the Bible..."
-          placeholderTextColor="#a08060"
+          placeholderTextColor="#aaa"
           value={input}
           onChangeText={setInput}
           multiline
@@ -171,55 +133,22 @@ export default function AssistantScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f0e8' },
+  container: { flex: 1, backgroundColor: '#ffffff' },
   list: { padding: 16, paddingBottom: 8 },
   chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
-  chip: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#8b4513',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  chipText: { color: '#8b4513', fontSize: 13 },
+  chip: { backgroundColor: '#faf7f2', borderWidth: 1, borderColor: '#967f42', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 },
+  chipText: { color: '#967f42', fontSize: 13, fontFamily: 'OpenSans_600SemiBold' },
   bubble: { maxWidth: '82%', borderRadius: 16, padding: 12, marginBottom: 10 },
-  userBubble: { backgroundColor: '#8b4513', alignSelf: 'flex-end', borderBottomRightRadius: 4 },
-  aiBubble: { backgroundColor: '#e8dfc8', alignSelf: 'flex-start', borderBottomLeftRadius: 4 },
+  userBubble: { backgroundColor: '#967f42', alignSelf: 'flex-end', borderBottomRightRadius: 4 },
+  aiBubble: { backgroundColor: '#faf7f2', alignSelf: 'flex-start', borderBottomLeftRadius: 4, borderWidth: 1, borderColor: '#e0d8c8' },
   bubbleText: { fontSize: 15, lineHeight: 22 },
-  userText: { color: '#fff' },
-  aiText: { color: '#4a3728' },
+  userText: { color: '#fff', fontFamily: 'OpenSans_400Regular' },
+  aiText: { color: '#1a1a1a', fontFamily: 'OpenSans_400Regular' },
   typing: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, gap: 8 },
-  typingText: { color: '#a08060', fontSize: 13 },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    padding: 12,
-    backgroundColor: '#e8dfc8',
-    borderTopWidth: 1,
-    borderTopColor: '#d4c5a9',
-    gap: 10,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#d4c5a9',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: '#4a3728',
-    maxHeight: 100,
-  },
-  send: {
-    backgroundColor: '#8b4513',
-    borderRadius: 22,
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sendDisabled: { backgroundColor: '#c4a882' },
+  typingText: { color: '#888888', fontSize: 13, fontFamily: 'OpenSans_400Regular' },
+  inputRow: { flexDirection: 'row', alignItems: 'flex-end', padding: 12, backgroundColor: '#f5f0e8', borderTopWidth: 1, borderTopColor: '#e0d8c8', gap: 10 },
+  input: { flex: 1, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e0d8c8', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, fontSize: 15, fontFamily: 'OpenSans_400Regular', color: '#1a1a1a', maxHeight: 100 },
+  send: { backgroundColor: '#967f42', borderRadius: 22, width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  sendDisabled: { backgroundColor: '#c4b08a' },
   sendIcon: { color: '#fff', fontSize: 16 },
 })

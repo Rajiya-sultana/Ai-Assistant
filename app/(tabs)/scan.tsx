@@ -1,5 +1,4 @@
 import { View, Text, StyleSheet } from 'react-native'
-
 export default function ScanScreen() {
   return (
     <View style={styles.container}>
@@ -9,10 +8,9 @@ export default function ScanScreen() {
     </View>
   )
 }
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f0e8', alignItems: 'center', justifyContent: 'center', padding: 24 },
+  container: { flex: 1, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', padding: 24 },
   icon: { fontSize: 52, marginBottom: 12 },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#8b4513', textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontSize: 15, color: '#a08060', textAlign: 'center' },
+  title: { fontSize: 22, fontFamily: 'OpenSans_700Bold', color: '#A52A2A', textAlign: 'center', marginBottom: 8 },
+  subtitle: { fontSize: 15, fontFamily: 'OpenSans_400Regular', color: '#888888', textAlign: 'center' },
 })

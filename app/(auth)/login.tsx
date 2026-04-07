@@ -21,23 +21,18 @@ export default function LoginScreen() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (error) Alert.alert('Login Failed', error.message)
-    // On success, the auth gate in _layout.tsx redirects automatically
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.inner}>
         <Text style={styles.icon}>✝</Text>
         <Text style={styles.title}>Bible Assistant</Text>
         <Text style={styles.subtitle}>Sign in to continue</Text>
-
         <TextInput
           style={styles.input}
           placeholder="Email"
-          placeholderTextColor="#a08060"
+          placeholderTextColor="#aaa"
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -47,19 +42,14 @@ export default function LoginScreen() {
         <TextInput
           style={styles.input}
           placeholder="Password"
-          placeholderTextColor="#a08060"
+          placeholderTextColor="#aaa"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
-
         <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-          {loading
-            ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.buttonText}>Sign In</Text>
-          }
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}
         </TouchableOpacity>
-
         <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
           <Text style={styles.link}>Don't have an account? Sign up</Text>
         </TouchableOpacity>
@@ -69,30 +59,31 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f0e8' },
+  container: { flex: 1, backgroundColor: '#ffffff' },
   inner: { flex: 1, justifyContent: 'center', padding: 24 },
   icon: { fontSize: 52, textAlign: 'center', marginBottom: 8 },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#8b4513', textAlign: 'center' },
-  subtitle: { fontSize: 16, color: '#a08060', textAlign: 'center', marginBottom: 32 },
+  title: { fontSize: 30, fontFamily: 'OpenSans_700Bold', color: '#A52A2A', textAlign: 'center', marginBottom: 4 },
+  subtitle: { fontSize: 15, fontFamily: 'OpenSans_400Regular', color: '#888888', textAlign: 'center', marginBottom: 32 },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: '#faf7f2',
     borderWidth: 1,
-    borderColor: '#d4c5a9',
-    borderRadius: 12,
+    borderColor: '#e0d8c8',
+    borderRadius: 10,
     padding: 14,
     marginBottom: 14,
-    fontSize: 16,
-    color: '#4a3728',
+    fontSize: 15,
+    fontFamily: 'OpenSans_400Regular',
+    color: '#1a1a1a',
   },
   button: {
-    backgroundColor: '#8b4513',
-    borderRadius: 12,
+    backgroundColor: '#967f42',
+    borderRadius: 10,
     padding: 16,
     alignItems: 'center',
     marginBottom: 16,
     minHeight: 52,
     justifyContent: 'center',
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  link: { color: '#8b4513', textAlign: 'center', fontSize: 14 },
+  buttonText: { color: '#fff', fontSize: 16, fontFamily: 'OpenSans_700Bold' },
+  link: { color: '#967f42', textAlign: 'center', fontSize: 14, fontFamily: 'OpenSans_600SemiBold' },
 })
